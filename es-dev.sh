@@ -6,19 +6,19 @@
 #
 # Bear in mind that many of those mods are still in development, and you need
 # to know how to fix things if something break.
-# 
+#
 # Useful urls :
 # * Initial work by meleu : https://github.com/meleu/rp-testers
 # * Additional features by hex : https://github.com/hex007/es-dev
 # * Support thread : https://retropie.org.uk/forum/topic/10626/es-devs-and-testers-this-tool-is-for-you/
-# 
-# Developer credits : 
+#
+# Developer credits :
 # - BuZz: For the amazing RetroPie code.
 # - @Zigurana: For having the idea to make this tool.
 # - @TMNTturtlguy: For the suggestion to make it work.
 # - @Hex: For the make clean omission tip and others ;)
 # - @Zigurana , @pjft , @jdrassa , @fieldofcows and other ES hackers: for improving EmulationStation.
-# 
+#
 
 #
 # hex007 - June-2017
@@ -190,26 +190,20 @@ function patches_menu() {
 
         choice=$(dialog --no-mouse \
                     --backtitle "$BACKTITLE" \
-                    --cancel-label "Back" \
                     --ok-label "OK" \
-                    --help-button \
-                    --help-label "Cancel" \
+                    --extra-button \
+                    --extra-label "Continue" \
                     --menu "List of available ES patches (from \"$PATCH_FILE\").\n\nChoose an option." 17 75 10 "${options[@]}" \
                     2>&1 > /dev/tty)
 
         case $? in
-            0 ) # OK
-                local es_src_dir=$(friendly_repo_branch_name)
+            0 ) local es_src_dir=$(friendly_repo_branch_name)
                 es_src_dir="$SRC_DIR/$es_src_dir"
                 setup_patch "${patches[$choice-1]}"
-                break
-                ;;
-            1 ) # Back
-                return 0
-                ;;
-            2 ) # Cancel
-                return 1
-                ;;
+                continue ;;
+
+            1 ) return 1 ;;
+            3 ) return 0 ;;
         esac
     done
 }
@@ -218,16 +212,16 @@ function setup_patch() {
     if [[ $1 == "reset" ]]; then
         git -C "$es_src_dir" reset --hard origin/$branch
         dialogMsg "Successfully removed all patches applied."
-        return 0
+        return
     fi
 
-    dialogYesNo "Are you sure you want to apply the patch? You dont have to apply it again if you have applied it previously to this repository\n\n
-                \ZbRepository\ZB  :  $_repo\n
-                \ZbBranch\ZB      :  $_branch\n
-                \ZbCommit Hash\ZB :  $_commit_hash\n\n
-                $_message" || return
-
     IFS=" ~ " read _repo _branch _commit_hash _message <<< $1
+    dialogYesNo "Are you sure you want to apply the patch? You dont have to apply it again if you have applied it previously to this repository\n\n
+        \ZbRepository\ZB  :  $_repo\n
+        \ZbBranch\ZB      :  $_branch\n
+        \ZbCommit Hash\ZB :  $_commit_hash\n\n
+        $_message" || return
+
     git -C "$es_src_dir" fetch "$_repo" "$_branch" && \
         git -C "$es_src_dir" cherry-pick "$_commit_hash" && \
         dialogMsg "Successfully applied patch."
@@ -235,7 +229,7 @@ function setup_patch() {
 
 function handle_build() {
     # priori: declaration `developer`, `branch`
-    
+
     dialogInfo "Building ${developer}'s $branch ES branch..."
     if ! build_es; then
         echo "====== W A R N I N G !!! ======"
@@ -440,7 +434,7 @@ function set_default_menu() {
     es_src_dir=""$SRC_DIR/$(friendly_repo_branch_name)""
 
     # Install and return. Only continue if error on install
-    install_es || return 1 
+    install_es || return 1
 }
 
 function install_es() {
@@ -457,13 +451,13 @@ function install_es() {
         ( sudo cp -f "$es_src_dir/emulationstation" "/usr/bin/emulationstation" ||
             ( read -t 30 -p "Look for error messages above. Press <enter> to continue."
             dialogMsg "Failed to install ${developer}'s $branch ES branch. :(\n\n(you should have seen the error messages, right?)"
-            return 1 
+            return 1
             ) \
         ) \
         && dialogMsg "SUCCESS!\n\nThe ${developer}'s EmulationStation $branch branch was successfully installed!\n\nThis ES version is now the default emulationstation on your system.\n\nYou can choose which ES version will be the default one using the \"C\" option at Main Menu."
         return 0
     fi
-    
+
     # Handle installation on Raspberry Pi
     dialogInfo "Installing ${developer}'s $branch ES branch in \"$es_install_dir\"."
 
@@ -629,19 +623,19 @@ function rpSwap() {
             local memory=$(free -t -m | awk '/^Total:/{print $2}')
             local needed=$2
             local size=$((needed - memory))
-            mkdir -p "$__swapdir/"
+            sudo mkdir -p "$__swapdir/"
             if [[ $size -ge 0 ]]; then
                 echo "Adding $size MB of additional swap"
-                fallocate -l ${size}M "$swapfile"
-                chmod 600 "$swapfile"
-                mkswap "$swapfile"
-                swapon "$swapfile"
+                sudo fallocate -l ${size}M "$swapfile"
+                sudo chmod 600 "$swapfile"
+                sudo mkswap "$swapfile"
+                sudo swapon "$swapfile"
             fi
             ;;
         off)
             echo "Removing additional swap"
-            swapoff "$swapfile" 2>/dev/null
-            rm -f "$swapfile"
+            sudo swapoff "$swapfile" 2>/dev/null
+            sudo rm -f "$swapfile"
             ;;
     esac
 }
