@@ -181,7 +181,8 @@ function patches_menu() {
         options=()
         patches=()
         while read -r _repo _branch _commit_hash _message; do
-            options+=( $((i++)) "$_repo ~ $_message" )
+            local _developer=$(echo "$_repo" | sed "s#.*https://github.com/\([^/]*\)/.*#\1#")
+            options+=( $((i++)) "$_developer ~ $_message" )
             patches+=( "$_repo ~ $_branch ~ $_commit_hash ~ $_message" )
         done < "$PATCH_FILE_FULL"
 
