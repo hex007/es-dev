@@ -25,7 +25,7 @@
 
 # globals ####################################################################
 
-VERSION="zeta.1"
+VERSION="zeta.2"
 
 # TESTERS: set NO_WARNING_FLAG to 1 if you don't want that warning message.
 NO_WARNING_FLAG=0
@@ -472,11 +472,11 @@ function install_es() {
     sudo cp -f "$es_src_dir/README.md" "$es_install_dir/"
     sudo cp -f "$es_src_dir/THEMES.md" "$es_install_dir/"
 
-    if ret; then
+    if $ret; then
         rp_scriptmodule_action configure || ret=1
     fi
 
-    if ! ret; then
+    if ! $ret; then
         echo "====== W A R N I N G !!! ======"
         echo "= SOMETHING WRONG HAPPENED!!! ="
         echo "==============================="
