@@ -19,7 +19,6 @@
 # - @Hex: For the make clean omission tip and others ;)
 # - @Zigurana , @pjft , @jdrassa , @fieldofcows and other ES hackers: for improving EmulationStation.
 #
-
 #
 # hex007 - June-2017
 
@@ -460,6 +459,8 @@ function install_es() {
     fi
 
     # Handle installation on Raspberry Pi
+    es_install_dir="${RP_SUPPLEMENTARY_DIR}/emulationstation"
+    
     dialogInfo "Installing ${developer}'s $branch ES branch in \"$es_install_dir\"."
 
     local ret=0
